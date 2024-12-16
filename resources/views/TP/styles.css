@@ -1,0 +1,192 @@
+/* Modern SQL Client Interface Styles */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #1e40af;
+    --background-color: #f8fafc;
+    --sidebar-bg: #ffffff;
+    --text-color: #1f2937;
+    --border-color: #e5e7eb;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    display: flex;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background: var(--sidebar-bg);
+    padding: 1.5rem;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sidebar h2, .sidebar h3 {
+    color: var(--text-color);
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.middle, .tables-section {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.database-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f3f4f6;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.database-item:hover {
+    background: #e5e7eb;
+}
+
+/* Main Content Area */
+.main {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Query Section */
+.query-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.query-toolbar {
+    margin: 1rem 0;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.query-toolbar button {
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.query-toolbar button:hover {
+    background: var(--secondary-color);
+}
+
+.query-input {
+    width: 100%;
+    min-height: 150px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    resize: vertical;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.9rem;
+}
+
+/* Content Area */
+.content {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.content-half {
+    flex: 1;
+    min-width: 300px;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Query Log */
+.query-log {
+    width: 300px;
+    background: var(--sidebar-bg);
+    padding: 1.5rem;
+    border-left: 1px solid var(--border-color);
+}
+
+.middle-query {
+    overflow-y: auto;
+    max-height: calc(100vh - 100px);
+}
+
+.log-entry {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: #f3f4f6;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.log-entry:hover {
+    background: #e5e7eb;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    body {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        max-height: 300px;
+    }
+    
+    .query-log {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+    }
+}
+
+/* Table Styles */
+#result-output table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+#result-output th,
+#result-output td {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+#result-output th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+#result-output tr:nth-child(even) {
+    background: #f8fafc;
+}

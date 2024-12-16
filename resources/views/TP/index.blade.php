@@ -1,416 +1,425 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>Modern SQL Client Interface</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Roboto', sans-serif;
-        }
-
-        body {
-            display: flex;
-            height: 100vh;
-            color: #333;
-            background-color: #f0f2f5;
-        }
-
-        h2,
-        h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            color: #007bff;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
-        }
-
-        .sidebar {
-            width: 250px;
-            background-color: #ffffff;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 1px solid #ddd;
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .database-item {
-            /* padding: 12px;
-            margin-bottom: 12px;
-            border-radius: 8px;
-            
-            background-color: #f8f9fa;
-            transition: background-color 0.3s, transform 0.3s; */
-            display: inline-block;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    padding: 10px 15px;
-    margin: 5px;
-    max-width: 90%;           /* Prevent bubbles from exceeding container width */
-    word-wrap: break-word;    /* Wrap long queries */
-    font-family: monospace;   /* For code-like appearance */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    color: #333;
-    cursor: pointer;
-    display: flex;           /* Use flexbox for horizontal layout */
-    flex-wrap: wrap;         /* Allows items to wrap to the next line if necessary */
-    gap: 10px;               /* Adds space between items */
-    justify-content: flex-start;
-        }
-
-        .database-item:hover {
-            background-color: #f1f8e9;
-            transform: translateX(10px);
-        }
-
-        .table-item {
-            /* padding: 12px;
-            margin-bottom: 12px;
-            border-radius: 8px;
-            background-color: #f8f9fa;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s; */
-            display: inline-block;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    padding: 10px 15px;
-    margin: 5px;
-    max-width: 90%;           /* Prevent bubbles from exceeding container width */
-    word-wrap: break-word;    /* Wrap long queries */
-    font-family: monospace;   /* For code-like appearance */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    color: #333;
-    cursor: pointer;
-    display: flex;           /* Use flexbox for horizontal layout */
-    flex-wrap: wrap;         /* Allows items to wrap to the next line if necessary */
-    gap: 10px;               /* Adds space between items */
-    justify-content: flex-start;
-        }
-
-        .table-item:hover {
-            background-color: #f1f8e9;
-            transform: translateX(10px);
-        }
-
-        .tables-section {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-top: 20px;
-        }
-
-        .main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 20px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .query-section {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .query-toolbar button {
-            padding: 10px 20px;
-            margin-right: 10px;
-            border: none;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s, transform 0.3s;
-        }
-
-        .query-toolbar button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-
-        .middle {
-            max-height: 315px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            /* Optional for spacing */
-        }
-
-        .query-input {
-            width: 100%;
-            min-height: 100px;
-            max-height: 300px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
-            resize: vertical;
-            padding: 10px;
-        }
-
-        .query-results {
-            width: 100%;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-            min-height: 250px;
-        }
-
-        .content {
-            display: flex;
-            gap: 20px;
-            height: 70%;
-        }
-
-        .content-half {
-
-            width:480px;
-            flex: 1;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .query-log {
-            background-color: #fff;
-            border-left: 1px solid #ddd;
-            box-shadow: -2px 0 15px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            padding: 20px;
-            flex-shrink: 0;
-            flex-grow: 0;
-            width: 300px;
-            overflow-y: auto;
-        }
-
-        .log-entry {
-           display: inline-block;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    padding: 10px 15px;
-    margin: 5px;
-    max-width: 90%;           /* Prevent bubbles from exceeding container width */
-    word-wrap: break-word;    /* Wrap long queries */
-    font-family: monospace;   /* For code-like appearance */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    color: #333;
-    cursor: pointer;
-    display: flex;           /* Use flexbox for horizontal layout */
-    flex-wrap: wrap;         /* Allows items to wrap to the next line if necessary */
-    gap: 20px;               /* Adds space between items */
-    justify-content: flex-start;
-        }
-
-        .log-entry:hover {
-            background-color: #e9ecef;
-            transform: translateX(5px);
-        }
-        .selected-db {
-    background-color: #f1f8e9; /* Green */
+    <title>SQL Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="theme.js" defer></script>
+</head>
+<style>
+/* Modern SQL Client Interface Styles */
+/* Modern SQL Client Interface Styles */
+/* Modern SQL Client Interface Styles */
+/* Modern SQL Client Interface Styles */
+:root {
+    /* Light theme */
+    --light-primary: #0ea5e9;
+    --light-secondary: #0284c7;
+    --light-background: #f8fafc;
+    --light-sidebar: #ffffff;
+    --light-text: #0f172a;
+    --light-border: #e2e8f0;
+    --light-hover: #f1f5f9;
     
+    /* Dark theme (current theme) */
+    --dark-primary: #f97316;
+    --dark-secondary: #ea580c;
+    --dark-background: #0f172a;
+    --dark-sidebar: #1e293b;
+    --dark-text: #e2e8f0;
+    --dark-border: #334155;
+    --dark-hover: rgba(255, 255, 255, 0.05);
+    
+    --primary-color: var(--dark-primary);
+    --secondary-color: var(--dark-secondary);
+    --background-color: var(--dark-background);
+    --sidebar-bg: var(--dark-sidebar);
+    --text-color: var(--dark-text);
+    --border-color: var(--dark-border);
+    --hover-color: var(--dark-hover);
 }
-/* General table styling */
-/* General table styling */
-#result-output table {
+
+:root[data-theme="dark"] {
+    --primary-color: var(--dark-primary);
+    --secondary-color: var(--dark-secondary);
+    --background-color: var(--dark-background);
+    --sidebar-bg: var(--dark-sidebar);
+    --text-color: var(--dark-text);
+    --border-color: var(--dark-border);
+    --hover-color: var(--dark-hover);
+}
+
+:root[data-theme="light"] {
+    --primary-color: var(--light-primary);
+    --secondary-color: var(--light-secondary);
+    --background-color: var(--light-background);
+    --sidebar-bg: var(--light-sidebar);
+    --text-color: var(--light-text);
+    --border-color: var(--light-border);
+    --hover-color: var(--light-hover);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top Navigation */
+.top-nav {
+    background: var(--sidebar-bg);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.primary-btn, .secondary-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.primary-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.primary-btn:hover {
+    background: var(--secondary-color);
+}
+
+.secondary-btn:hover {
+    background: var(--hover-color);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+    background: var(--hover-color);
+}
+
+.theme-icon {
+    font-size: 1.2rem;
+}
+
+[data-theme="light"] .theme-icon {
+    content: "🌙";
+}
+
+[data-theme="dark"] .theme-icon {
+    content: "☀️";
+}
+
+/* Workspace Layout */
+.workspace {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Database Explorer */
+.db-explorer {
+    width: 280px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.explorer-section {
+    padding: 1.5rem;
+}
+
+.explorer-section h2 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.db-list, .table-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.db-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.db-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.db-icon {
+    font-size: 1.2rem;
+}
+
+/* Query Workspace */
+.query-workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 1.5rem;
+    overflow-y: auto;
+}
+
+.query-editor {
+    background: var(--sidebar-bg);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.editor-area {
+    width: 100%;
+    min-height: 150px;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    padding: 0.5rem;
+    outline: none;
+}
+
+.results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+    min-height: 500px;
+}
+
+.result-panel {
+    background: var(--sidebar-bg);
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    flex: 1;
+}
+
+.panel-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.panel-header h2 {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.panel-content {
+    padding: 1.5rem;
+    overflow: auto;
+    height: calc(100% - 60px);
+}
+
+/* Table Styles */
+table {
     width: 100%;
     border-collapse: collapse;
-    margin: 10px 0; /* Reduced margin for a more compact display */
-    font-size: 14px; /* Smaller font size for a more compact look */
+    font-size: 0.95rem;
+}
+
+th, td {
+    padding: 1rem 1.5rem;
     text-align: left;
-    background-color: #ffffff; /* White background for a clean look */
-    border-radius: 6px; /* Slightly rounded corners for a softer look */
-    overflow: hidden; /* Ensures rounded corners on tables with borders */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for a lifted effect */
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 
-/* Table header styling */
-#result-output table thead tr {
-    background-color: #f1f8e9; /* Light green header for a modern look */
-    color: #333; /* Dark text for contrast */
-    word-wrap: break-word; /* Wrap long queries */
-    font-family: monospace; /* Monospace font for code-like appearance */
-    text-align: left;
+th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-/* Remove borders between columns and rows */
-#result-output table th,
-#result-output table td {
-    padding: 10px 12px; /* Reduced padding for smaller cells */
-    vertical-align: middle; /* Ensure proper alignment */
+td {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
 }
 
-/* Alternate row background color */
-#result-output table tbody tr:nth-child(even) {
-    background-color: #f9f9f9; /* Light gray for alternate rows */
+tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
 }
 
-/* Hover effect for rows */
-#result-output table tbody tr:hover {
-    background-color: #e3f2fd; /* Light blue hover effect for rows */
-    cursor: pointer;
+/* Responsive Design */
+@media (max-width: 768px) {
+    .workspace {
+        flex-direction: column;
+    }
+    
+    .db-explorer {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        max-height: 300px;
+    }
 }
 
-
-
-
-
-
-/* Style for selected database indicator */
-
-
-/* Style for selected table */
-.selected-table {
-    background-color: #f1f8e9; /* Green color */
-}
-#internal-query-output{
-    width:100%;
-
-}
-#result-output, #internal-query-output {
-    height: 120%;  /* Occupy the full height of the container */
-    overflow-y: auto;  /* Make the content scrollable if it exceeds the height */
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
 }
 
-
-
-/* Optional: Limit the height of the content area to prevent overflow */
-.query-results {
-    max-height: 700px;  /* You can adjust this value to your preferred height */
-    overflow-y: auto;   /* Enable scrolling if content exceeds this height */
+::-webkit-scrollbar-track {
+    background: var(--background-color);
 }
 
-
-/* Style for Array Queries */
-.query-bubble-array {
-    display: inline-block;
-    background-color: #f1f8e9;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    padding: 10px 15px;
-    margin: 5px;
-    max-width: 90%;           /* Prevent bubbles from exceeding container width */
-    word-wrap: break-word;    /* Wrap long queries */
-    font-family: monospace;   /* For code-like appearance */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    color: #333;
-    display: flex;
-    flex-wrap: wrap;          /* Ensure bubbles wrap to the next line */
-    gap: 10px;
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 5px;
 }
 
-/* Style for String Query */
-.query-bubble-string {
-    background-color: #f1f8e9;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    padding: 10px 15px;
-    margin: 5px;
-    max-width: 90%;           /* Prevent bubbles from exceeding container width */
-    word-wrap: break-word;    /* Wrap long queries */
-    font-family: monospace;   /* For code-like appearance */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    color: #333;
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
 }
-/* Style for the JSON output */
-.json-result {
-    background-color: #f1f8e9;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    padding: 10px 15px;
-    margin: 5px;
-    max-width: 90%;           /* Prevent bubbles from exceeding container width */
-    word-wrap: break-word;    /* Wrap long queries */
-    font-family: monospace;   /* For code-like appearance */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    color: #333;}
-
-</style>
 
     </style>
-</head>
-
 <body>
-
-    <div class="sidebar">
-        <h2>Databases</h2>
-        <div class="middle">
-
-            @foreach($databases as $dbId => $dbName)
-                <div class="database-item" onclick="loadTables({{ $dbId }}, '{{ $dbName }}', event)"> {{ $dbName }}</div>
-            @endforeach
-
+<nav class="top-nav">
+        <h1>SQL Explorer</h1>
+        <div class="nav-controls">
+            <button onclick="toggleTheme()" class="theme-toggle" title="Toggle theme">
+                <span class="theme-icon">🌙</span>
+            </button>
+            <button onclick="runQuery()" class="primary-btn">Execute Query</button>
+            <button onclick="clearResults()" class="secondary-btn">Clear</button>
         </div>
-        <h3>Tables</h3>
-        <div class="tables-section">
+    </nav>
 
-            <div id="table-selection"></div>
-        </div>
-    </div>
-
-    <div class="main">
-        <div class="query-section">
-            <h2>SQL Query</h2>
-
-            <div class="query-toolbar">
-                <button onclick="runQuery()">Run Query</button>
-                <button onclick="clearResults()">Clear</button>
+    <div class="workspace">
+        <aside class="db-explorer">
+            <div class="explorer-section">
+                <h2>Database Explorer</h2>
+                <div class="db-list">
+                    @foreach($databases as $dbId => $dbName)
+                        <div class="db-card" onclick="loadTables({{ $dbId }}, '{{ $dbName }}', event)">
+                            <span class="db-icon">📁</span>
+                            <span class="db-name">{{ $dbName }}</span>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-            <textarea id="sql-query" class="query-input" placeholder="Write your SQL query here..."></textarea>
-        </div>
+            
+            <div class="explorer-section">
+                <h2>Tables</h2>
+                <div id="table-selection" class="table-list"></div>
+            </div>
+        </aside>
 
-        <div class="content">
-        <div class="content-half query-results">
-    <h2>Query Result</h2>
-    <div id="result-output">
-        <!-- Le tableau sera généré ici -->
+        <main class="query-workspace">
+            <div class="query-editor">
+                <textarea id="sql-query" 
+                          class="editor-area" 
+                          placeholder="SELECT * FROM your_table..."></textarea>
+            </div>
+
+            <div class="results-container">
+                <div class="result-panel">
+                    <div class="panel-header">
+                        <h2>Query Results</h2>
+                    </div>
+                    <div id="result-output" class="panel-content"></div>
+                </div>
+
+                <div class="result-panel">
+                    <div class="panel-header">
+                        <h2>Generated SQL</h2>
+                    </div>
+                    <div id="internal-query-output" class="panel-content"></div>
+                </div>
+            </div>
+        </main>
     </div>
-</div>
-
-<div class="content-half query-results">
-    <h2>Internal Query</h2>
-    <div id="internal-query-output">
-        <!-- La requête interne sera affichée ici -->
-    </div>
-</div>
-
-
-        </div>
-    </div>
-    <div class="query-log">
-    <h2>Query History</h2>
-    <div class="middle-query">
-        @if(isset($queries) && count($queries) > 0)
-                @foreach($queries as $query)
-                <div class="log-entry" onclick="populateQuery(`{!! addslashes($query->content_query) !!}`, event)">{{ $query->content_query }}</div>
-                @endforeach
-        @else
-            <p>No saved queries found.</p>
-        @endif
-    </div>
-</div>
-
+</body>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
+<script>
+        // Theme switching functionality
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    html.setAttribute('data-theme', newTheme);
+    
+    // Update theme icon
+    const themeIcon = document.querySelector('.theme-icon');
+    themeIcon.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+    
+    // Save theme preference
+    localStorage.setItem('theme', newTheme);
+}
+
+// Set initial theme from localStorage
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    const themeIcon = document.querySelector('.theme-icon');
+    themeIcon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+});
+
         // Optional function to load table content (this could be implemented as needed)
         // Function to load tables for a given database
         function runQuery() {
